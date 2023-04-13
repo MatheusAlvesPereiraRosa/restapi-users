@@ -1,35 +1,31 @@
-var jwt = require("jsonwebtoken")
+var jwt = require("jsonwebtoken");
 var secret = "aoignapnapron-aébe5aebopaneab"
 
 module.exports = function (req, res, next) {
-    const authToken = req.headers["authorization"]
+    const authToken = req.headers['authorization']
 
     if (authToken != undefined) {
-        const bearer = authToken.split(" ")
-        var token = bearer[1]
+        const bearer = authToken.split(' ');
+        var token = bearer[1];
 
         try {
-            var decoded = jwt.verify(token, secret)
+            var decoded = jwt.verify(token, secret);
 
             if (decoded.role == 1) {
-                next()
+                next();
             } else {
-                res.status(403)
-                res.send("Você não tem permissão para isso")
-                return
+                res.status(403);
+                res.send("Você não tem permissão para isso!");
+                return;
             }
-
-            console.log(decoded)
-
-            next()
         } catch (err) {
-            res.status(403)
-            res.send("Você não está autenticado")
-            return
+            res.status(403);
+            res.send("Você não está autenticado");
+            return;
         }
     } else {
-        res.status(403)
-        res.send("Você não está autenticado")
-        return
+        res.status(403);
+        res.send("Você não está autenticado, não existe token");
+        return;
     }
 }

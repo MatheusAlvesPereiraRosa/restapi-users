@@ -2,12 +2,13 @@ var User = require("../models/User")
 var PasswordToken = require("../models/PasswordToken")
 var jwt = require("jsonwebtoken")
 var bcrypt = require("bcrypt")
+var Main = require("../models/Main")
 
 var secret = "aoignapnapron-aébe5aebopaneab"
 
 class UserController {
 
-    async index(req, res) { 
+    async index(req, res) {
         var users = await User.findAll()
         res.json(users)
     }
@@ -28,7 +29,7 @@ class UserController {
     async create(req, res) {
         var { email, name, password } = req.body
 
-        if (email == undefined) {
+        if (email == undefined || email == "" || email == " ") {
             res.status(403)
             res.json({ err: "O email é inválido" })
             return
@@ -38,7 +39,7 @@ class UserController {
 
         if (emailExists) {
             res.status(406)
-            res.json({err: "O email já está em uso"})
+            res.json({ err: "O email já está em uso" })
         }
 
         await User.new(email, password, name)
@@ -58,7 +59,7 @@ class UserController {
     }
 
     async edit(req, res) {
-        var {id, name, role, email} = req.body
+        var { id, name, role, email } = req.body
 
         var result = await User.update(id, email, name, role)
 
@@ -112,7 +113,7 @@ class UserController {
         var isTokenValid = await PasswordToken.validate(token)
 
         if (isTokenValid.status) {
-            await User.changePassword(password, isTokenValid.token.userId, isTokenValid.token.token)
+            await Main.changePassword(password, isTokenValid.token.userId, isTokenValid.token.token)
 
             res.status(200)
             res.send("Senha alterada")
@@ -123,7 +124,7 @@ class UserController {
     }
 
     async login(req, res) {
-        var {email, password} = req.body
+        var { email, password } = req.body
 
         var user = await User.findByEmail(email)
 
@@ -132,17 +133,18 @@ class UserController {
             var resultado = await bcrypt.compare(password, user.password)
 
             if (resultado) {
-                var token = jwt.sign({email: user.email, role: user.role}, secret)
+                var token = jwt.sign({ email: user.email, role: user.role }, secret)
 
                 res.status(200)
-                res.json({token: token})
+                res.json({ token: token })
             } else {
                 res.status(406)
-                res.json("Senha incorreta")
+                res.json({ err: "Senha incorreta" })
             }
 
         } else {
-           res.json({status: false})
+            res.status(406)
+            res.json({ status: false, err: "O usuário não existe" })
         }
     }
 }
